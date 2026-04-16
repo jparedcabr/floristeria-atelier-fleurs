@@ -20,10 +20,19 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# Intentamos buscar MONGODB_URI (el que pusimos en Render) o MONGO_URL
+mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL')
 
+if not mongo_url:
+    # Si no hay ninguna variable (caso local), usamos localhost por defecto
+    mongo_url = "mongodb://localhost:27017"
+
+client = AsyncIOMotorClient(mongo_url)
+
+# Para el nombre de la base de datos, buscamos DB_NAME, 
+# y si no existe, le ponemos uno por defecto como 'floristeria_db'
+db_name = os.environ.get('DB_NAME', 'floristeria_db')
+db = client[db_name]
 # Cloudinary configuration
 cloudinary_url = os.environ.get('CLOUDINARY_URL', '')
 if cloudinary_url:
